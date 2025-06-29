@@ -33,7 +33,11 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>此應用需要位置權限來掃描藍牙裝置</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>此應用需要藍牙權限來連接電子書閱讀器</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>此應用需要藍牙權限來與電子書閱讀器通信</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
