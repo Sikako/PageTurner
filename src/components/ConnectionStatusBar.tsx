@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,9 @@ const ConnectionStatusBar: React.FC<ConnectionStatusProps> = ({
   garminConnected,
   garminName,
 }) => {
+  const eReaderColor = eReaderConnected ? '#4CAF50' : '#999';
+  const garminColor = garminConnected ? '#4CAF50' : '#999';
+
   return (
     <View style={styles.container}>
       {/* E-Reader Status */}
@@ -33,7 +36,7 @@ const ConnectionStatusBar: React.FC<ConnectionStatusProps> = ({
           <Text
             style={[
               styles.statusValue,
-              { color: eReaderConnected ? '#4CAF50' : '#999' },
+              { color: eReaderColor },
             ]}
           >
             {eReaderConnected ? (eReaderName || '已連接') : '未連接'}
@@ -56,7 +59,7 @@ const ConnectionStatusBar: React.FC<ConnectionStatusProps> = ({
           <Text
             style={[
               styles.statusValue,
-              { color: garminConnected ? '#4CAF50' : '#999' },
+              { color: garminColor },
             ]}
           >
             {garminConnected ? (garminName || '已連接') : '未連接'}

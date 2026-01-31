@@ -11,6 +11,32 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import LogService, { LogEntry, LogLevel } from '../services/LogService';
 
+interface FilterButtonProps {
+  level: LogLevel | 'ALL';
+  label: string;
+  isActive: boolean;
+  onPress: (level: LogLevel | 'ALL') => void;
+}
+
+const FilterButton: React.FC<FilterButtonProps> = ({ level, label, isActive, onPress }) => (
+  <TouchableOpacity
+    style={[
+      styles.filterButton,
+      isActive && styles.filterButtonActive,
+    ]}
+    onPress={() => onPress(level)}
+  >
+    <Text
+      style={[
+        styles.filterButtonText,
+        isActive && styles.filterButtonTextActive,
+      ]}
+    >
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
 const LogScreen: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filter, setFilter] = useState<LogLevel | 'ALL'>('ALL');
@@ -102,25 +128,6 @@ const LogScreen: React.FC = () => {
     );
   };
 
-  const FilterButton: React.FC<{ level: LogLevel | 'ALL', label: string }> = ({ level, label }) => (
-    <TouchableOpacity
-      style={[
-        styles.filterButton,
-        filter === level && styles.filterButtonActive,
-      ]}
-      onPress={() => setFilter(level)}
-    >
-      <Text
-        style={[
-          styles.filterButtonText,
-          filter === level && styles.filterButtonTextActive,
-        ]}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -144,11 +151,11 @@ const LogScreen: React.FC = () => {
 
       {/* Filter Bar */}
       <View style={styles.filterBar}>
-        <FilterButton level="ALL" label="全部" />
-        <FilterButton level={LogLevel.INFO} label="資訊" />
-        <FilterButton level={LogLevel.SUCCESS} label="成功" />
-        <FilterButton level={LogLevel.WARNING} label="警告" />
-        <FilterButton level={LogLevel.ERROR} label="錯誤" />
+        <FilterButton level="ALL" label="全部" isActive={filter === 'ALL'} onPress={setFilter} />
+        <FilterButton level={LogLevel.INFO} label="資訊" isActive={filter === LogLevel.INFO} onPress={setFilter} />
+        <FilterButton level={LogLevel.SUCCESS} label="成功" isActive={filter === LogLevel.SUCCESS} onPress={setFilter} />
+        <FilterButton level={LogLevel.WARNING} label="警告" isActive={filter === LogLevel.WARNING} onPress={setFilter} />
+        <FilterButton level={LogLevel.ERROR} label="錯誤" isActive={filter === LogLevel.ERROR} onPress={setFilter} />
       </View>
 
       {/* Log Count */}

@@ -15,6 +15,7 @@ const MainScreen: React.FC = () => {
   const [connectedDevices, setConnectedDevices] = useState<ConnectedDevice[]>([]);
   const [targetDevice, setTargetDevice] = useState<ConnectedDevice | null>(null);
   const [isVolumeKeyListening, setVolumeKeyListening] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [garminConnected, setGarminConnected] = useState(false); // Placeholder for Garmin connection
 
   const initialize = useCallback(async () => {
@@ -141,7 +142,7 @@ const MainScreen: React.FC = () => {
         <Text style={styles.headerText}>廣播中...</Text>
         <Text style={styles.subHeaderText}>請在閱讀器上尋找並連接您的手機</Text>
       </View>
-      <View style={{ flex: 1 }}>
+      <View style={styles.deviceList}>
         <FlatList
           data={connectedDevices}
           renderItem={renderDeviceItem}
@@ -174,6 +175,7 @@ const styles = StyleSheet.create({
   header: { padding: 20, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#EEE' },
   headerText: { fontSize: 22, fontWeight: 'bold', textAlign: 'center' },
   subHeaderText: { fontSize: 16, textAlign: 'center', color: '#666', marginTop: 5 },
+  deviceList: { flex: 1 },
   listHeader: { fontSize: 18, fontWeight: 'bold', padding: 15, color: '#333' },
   emptyText: { textAlign: 'center', marginTop: 50, color: '#999' },
   deviceItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#EEE' },

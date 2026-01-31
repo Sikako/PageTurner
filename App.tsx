@@ -17,6 +17,14 @@ import LogScreen from './src/screens/LogScreen';
 
 const Tab = createBottomTabNavigator();
 
+const ControlIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="bluetooth" size={size} color={color} />
+);
+
+const LogIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="article" size={size} color={color} />
+);
+
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -36,9 +44,7 @@ function App(): React.JSX.Element {
             component={MainScreen}
             options={{
               tabBarLabel: '控制',
-              tabBarIcon: ({ color, size }) => (
-                <Icon name="bluetooth" size={size} color={color} />
-              ),
+              tabBarIcon: ControlIcon,
             }}
           />
           <Tab.Screen
@@ -46,9 +52,7 @@ function App(): React.JSX.Element {
             component={LogScreen}
             options={{
               tabBarLabel: '日誌',
-              tabBarIcon: ({ color, size }) => (
-                <Icon name="article" size={size} color={color} />
-              ),
+              tabBarIcon: LogIcon,
             }}
           />
         </Tab.Navigator>
