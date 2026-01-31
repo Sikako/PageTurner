@@ -3,6 +3,7 @@ package com.pageturner
 import android.app.Application
 import com.facebook.react.PackageList
 import com.pageturner.hid.HidPeripheralPackage
+import com.pageturner.service.ForegroundServicePackage
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
@@ -19,6 +20,7 @@ class MainApplication : Application(), ReactApplication {
             PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               add(HidPeripheralPackage())
+              add(ForegroundServicePackage())
             }
 
         override fun getJSMainModuleName(): String = "index"

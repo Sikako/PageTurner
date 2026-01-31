@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, Alert, StatusBar, Text, FlatList, TouchableOpacity, NativeEventEmitter, NativeModules } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ControlPanel from '../components/ControlPanel';
+import ConnectionStatusBar from '../components/ConnectionStatusBar';
 import HIDPeripheralService from '../services/HIDPeripheralService';
+import LogService from '../services/LogService';
 
 interface ConnectedDevice {
   name: string;
@@ -13,12 +15,16 @@ const MainScreen: React.FC = () => {
   const [connectedDevices, setConnectedDevices] = useState<ConnectedDevice[]>([]);
   const [targetDevice, setTargetDevice] = useState<ConnectedDevice | null>(null);
   const [isVolumeKeyListening, setVolumeKeyListening] = useState(false);
+  const [garminConnected, setGarminConnected] = useState(false); // Placeholder for Garmin connection
 
   const initialize = useCallback(async () => {
     try {
+      LogService.info('系統', '正在啟動 HID 廣播服務...');
       await HIDPeripheralService.startAdvertising();
+      LogService.success('系統', 'HID 廣播服務已啟動');
     } catch (error) {
-      Alert.alert('Error', 'Failed to start advertising.');
+      LogService.error('系統', '啟動 HID 廣播服務失敗');
+      Alert.alert('錯誤', '無法啟動廣播服務');
     }
   }, []);
 
@@ -31,8 +37,10 @@ const MainScreen: React.FC = () => {
       (event: { status: string; name: string; address: string }) => {
         console.log('Connection state changed:', event);
         if (event.status === 'connected') {
+          LogService.success('藍牙', `閱讀器已連接: ${event.name}`);
           setConnectedDevices(prev => [...prev.filter(d => d.address !== event.address), { name: event.name, address: event.address }]);
         } else {
+          LogService.warning('藍牙', `閱讀器已斷線: ${event.name}`);
           setConnectedDevices(prev => prev.filter(d => d.address !== event.address));
           if (targetDevice?.address === event.address) {
             setTargetDevice(null);
@@ -52,8 +60,10 @@ const MainScreen: React.FC = () => {
     try {
       await HIDPeripheralService.setTargetDevice(device.address);
       setTargetDevice(device);
+      LogService.success('控制', `目標裝置已設定為: ${device.name}`);
       Alert.alert('目標已設定', `現在將控制 ${device.name}`);
     } catch (error) {
+      LogService.error('控制', `設定目標裝置失敗: ${device.name}`);
       Alert.alert('設定失敗', '無法將此裝置設定為目標');
     }
   }, []);
@@ -64,6 +74,8 @@ const MainScreen: React.FC = () => {
       return;
     }
     const keyCode = direction === 'left' ? 0x50 : 0x4F;
+    const action = direction === 'left' ? '上一頁' : '下一頁';
+    LogService.info('翻頁', `發送翻頁指令: ${action}`);
     await HIDPeripheralService.sendKeyPress(keyCode);
   }, [targetDevice]);
 
@@ -74,6 +86,11 @@ const MainScreen: React.FC = () => {
     }
     const newState = !isVolumeKeyListening;
     setVolumeKeyListening(newState);
+    if (newState) {
+      LogService.success('音量鍵', '音量鍵控制已啟用');
+    } else {
+      LogService.info('音量鍵', '音量鍵控制已停用');
+    }
     Alert.alert('音量鍵控制', newState ? '已啟用' : '已停用');
   }, [isVolumeKeyListening, targetDevice]);
 
@@ -84,6 +101,8 @@ const MainScreen: React.FC = () => {
       (event: { action: 'volumeUp' | 'volumeDown' }) => {
         if (isVolumeKeyListening) {
           const direction = event.action === 'volumeUp' ? 'right' : 'left';
+          const action = direction === 'left' ? '上一頁' : '下一頁';
+          LogService.info('音量鍵', `偵測到音量鍵: ${action}`);
           handlePageTurn(direction);
         }
       }
@@ -109,6 +128,15 @@ const MainScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" />
+      
+      {/* Connection Status Bar */}
+      <ConnectionStatusBar
+        eReaderConnected={!!targetDevice}
+        eReaderName={targetDevice?.name}
+        garminConnected={garminConnected}
+        garminName={garminConnected ? 'Garmin Watch' : undefined}
+      />
+
       <View style={styles.header}>
         <Text style={styles.headerText}>廣播中...</Text>
         <Text style={styles.subHeaderText}>請在閱讀器上尋找並連接您的手機</Text>
@@ -129,6 +157,7 @@ const MainScreen: React.FC = () => {
         onDisconnect={() => {
           if (targetDevice) {
             // This is now a logical disconnect from the target, not a BLE disconnect
+            LogService.info('控制', `已取消對 ${targetDevice.name} 的控制`);
             setTargetDevice(null);
             Alert.alert('已停用', `已取消對 ${targetDevice.name} 的控制。`);
           }
