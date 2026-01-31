@@ -100,7 +100,7 @@ class LogService {
   // Export logs as text
   exportAsText(): string {
     return this.logs.map(log => {
-      const time = log.timestamp.toLocaleString('zh-TW');
+      const time = log.timestamp.toLocaleString();
       return `[${time}] [${log.level}] [${log.category}] ${log.message}`;
     }).join('\n');
   }

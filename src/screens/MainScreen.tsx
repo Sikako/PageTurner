@@ -15,8 +15,7 @@ const MainScreen: React.FC = () => {
   const [connectedDevices, setConnectedDevices] = useState<ConnectedDevice[]>([]);
   const [targetDevice, setTargetDevice] = useState<ConnectedDevice | null>(null);
   const [isVolumeKeyListening, setVolumeKeyListening] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [garminConnected, setGarminConnected] = useState(false); // Placeholder for Garmin connection
+  const [_garminConnected, _setGarminConnected] = useState(false); // Placeholder for Garmin connection
 
   const initialize = useCallback(async () => {
     try {
@@ -134,8 +133,8 @@ const MainScreen: React.FC = () => {
       <ConnectionStatusBar
         eReaderConnected={!!targetDevice}
         eReaderName={targetDevice?.name}
-        garminConnected={garminConnected}
-        garminName={garminConnected ? 'Garmin Watch' : undefined}
+        garminConnected={_garminConnected}
+        garminName={_garminConnected ? 'Garmin Watch' : undefined}
       />
 
       <View style={styles.header}>

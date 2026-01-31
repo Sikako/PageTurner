@@ -113,7 +113,7 @@ const LogScreen: React.FC = () => {
   const renderLogItem = ({ item }: { item: LogEntry }) => {
     const color = getLogColor(item.level);
     const icon = getLogIcon(item.level);
-    const time = item.timestamp.toLocaleTimeString('zh-TW');
+    const time = item.timestamp.toLocaleTimeString();
 
     return (
       <View style={styles.logItem}>
