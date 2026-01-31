@@ -71,43 +71,65 @@ PageTurner 是一個跨平台遠程控制系統，可以讓您透過 Android 手
 
 ## 安裝與設置
 
-### 前置要求
+### 下載 APK（推薦給一般使用者）
+
+如果您只想使用應用程式而不需要開發，可以直接下載預建的 APK：
+
+1. 前往 [Releases 頁面](https://github.com/Sikako/PageTurner/releases)
+2. 下載最新版本的 `PageTurner-{version}.apk`
+3. 在 Android 裝置上啟用「允許安裝未知來源的應用程式」
+4. 安裝 APK
+
+**注意**: 首次安裝時，Android 可能會警告應用程式來自未知來源。這是正常的，因為應用程式未在 Google Play 商店發布。
+
+### 開發環境設置
+
+#### 前置要求
 
 1. 已完成 [React Native 開發環境設置](https://reactnative.dev/docs/set-up-your-environment)
 2. Android Studio（用於 Android 開發）
 3. Node.js >= 18
 4. JDK 17
 
-### 步驟 1: 安裝依賴
+#### 步驟 1: 安裝依賴
 
 ```bash
 npm install
 ```
 
-### 步驟 2: Android 設置
+#### 步驟 2: Android 設置
 
 確保您的 Android 設備：
 - Android 8.0 或更高版本
 - 支援 Bluetooth 5.0 和 BLE
 - 支援 HID over GATT 協議
 
-### 步驟 3: 啟動 Metro
+#### 步驟 3: 啟動 Metro
 
 ```bash
 npm start
 ```
 
-### 步驟 4: 運行應用
+#### 步驟 4: 運行應用
 
 在 Metro 運行的情況下，打開新的終端窗口：
 
-#### Android
+##### Android
 
 ```bash
 npm run android
 ```
 
 或使用 Android Studio 打開 `android` 資料夾並運行。
+
+### CI/CD 與自動建置
+
+本專案使用 GitHub Actions 自動化測試、建置和發布流程。詳細說明請參考 [GitHub Actions 文件](docs/GITHUB_ACTIONS.md)。
+
+**可用的工作流程**:
+- 🧪 **Test (CI)**: 自動執行測試和程式碼檢查
+- 🏗️ **Build APK**: 為每次提交建置 Debug 和 Release APK
+- 🚀 **Production Release**: 建立正式版本並發布到 GitHub Releases
 
 ## 使用說明
 
@@ -371,6 +393,23 @@ MIT License
 3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 開啟 Pull Request
+
+### CI/CD
+本專案使用 GitHub Actions 進行自動化測試和建置。請確保：
+- 所有測試通過 (`npm test`)
+- 程式碼通過 Linting (`npm run lint`)
+- TypeScript 編譯無錯誤 (`npx tsc --noEmit`)
+
+詳細的工作流程說明請參考 [GitHub Actions 文件](docs/GITHUB_ACTIONS.md)。
+
+## 相關文件
+
+- 📖 [快速入門指南](docs/QUICK_START.md)
+- 🏗️ [系統架構文件](docs/ARCHITECTURE.md)
+- 🔧 [故障排除指南](docs/TROUBLESHOOTING.md)
+- ⌚ [Garmin 開發指南](docs/GARMIN_DEVELOPMENT.md)
+- 🚀 [GitHub Actions 使用說明](docs/GITHUB_ACTIONS.md)
+- 📝 [實作摘要](docs/IMPLEMENTATION_SUMMARY.md)
 
 ## 聯絡資訊
 

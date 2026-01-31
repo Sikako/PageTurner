@@ -1,14 +1,22 @@
-name: Build and Release
+name: Production Release
 
 on:
   push:
-    branches:
-      - release
+    tags:
+      - 'v*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:  # Allow manual triggering
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
 
 jobs:
   build-and-release:
-    name: Build and Release App
-    runs-on: macos-latest # iOS build requires macOS
+    name: Build and Release Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -18,65 +26,98 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '2.7' # Version specified in Gemfile.lock
+          cache: 'npm'
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install iOS dependencies
-        run: cd ios && pod install
+      - name: Install npm dependencies
+        run: npm ci
 
       - name: Run tests
         run: npm test
 
-      - name: Build Android APK
+      - name: Run linter
+        run: npm run lint
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "tag=v${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Android Release APK
         run: |
           cd android
-          ./gradlew assembleRelease
-        
-      - name: Build iOS App
-        run: |
-          cd ios
-          xcodebuild -workspace PageTurner.xcworkspace -scheme PageTurner -sdk iphoneos -configuration Release archive -archivePath $PWD/build/PageTurner.xcarchive
-          xcodebuild -exportArchive -archivePath $PWD/build/PageTurner.xcarchive -exportPath $PWD/build/PageTurner -exportOptionsPlist $PWD/ExportOptions.plist
+          ./gradlew assembleRelease --no-daemon
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Rename APK with version
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk \
+             android/app/build/outputs/apk/release/PageTurner-${{ steps.version.outputs.version }}.apk
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            head -n 20 CHANGELOG.md >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "changelog=Release ${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## PageTurner ${{ steps.version.outputs.version }}
+            
+            ### Downloads
+            - **Android APK**: PageTurner-${{ steps.version.outputs.version }}.apk
+            
+            ### Installation
+            1. Download the APK file
+            2. Enable "Install from Unknown Sources" on your Android device
+            3. Install the APK
+            
+            ### Changes
+            ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: false
-
-      - name: Upload Android APK to Release
-        uses: actions/upload-release-asset@v1
+          files: |
+            android/app/build/outputs/apk/release/PageTurner-${{ steps.version.outputs.version }}.apk
+            android/app/build/outputs/apk/release/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: android/app/build/outputs/apk/release/app-release.apk
-          asset_name: PageTurner.apk
-          asset_content_type: application/vnd.android.package-archive
 
-      - name: Upload iOS App to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ios/build/PageTurner/PageTurner.ipa
-          asset_name: PageTurner.ipa
-          asset_content_type: application/octet-stream
+          name: PageTurner-${{ steps.version.outputs.version }}
+          path: android/app/build/outputs/apk/release/PageTurner-${{ steps.version.outputs.version }}.apk
+          retention-days: 90
