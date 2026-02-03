@@ -16,6 +16,10 @@
     <!-- 音量控制權限 -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     
+    <!-- 前台服務權限 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
     <!-- 硬體功能 -->
     <uses-feature
         android:name="android.hardware.bluetooth_le"
@@ -41,5 +45,12 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+      
+      <!-- 前台服務 -->
+      <service
+        android:name=".service.ForegroundService"
+        android:enabled="true"
+        android:exported="false"
+        android:foregroundServiceType="connectedDevice" />
     </application>
 </manifest>

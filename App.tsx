@@ -7,10 +7,23 @@
 
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import MainScreen from './src/screens/MainScreen';
+import LogScreen from './src/screens/LogScreen';
+
+const Tab = createBottomTabNavigator();
+
+const ControlIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="bluetooth" size={size} color={color} />
+);
+
+const LogIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="article" size={size} color={color} />
+);
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -19,7 +32,30 @@ function App(): React.JSX.Element {
     <SafeAreaProvider>
       <NavigationContainer>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <MainScreen />
+        <Tab.Navigator
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: '#2196F3',
+            tabBarInactiveTintColor: '#999',
+          }}
+        >
+          <Tab.Screen
+            name="Control"
+            component={MainScreen}
+            options={{
+              tabBarLabel: '控制',
+              tabBarIcon: ControlIcon,
+            }}
+          />
+          <Tab.Screen
+            name="Logs"
+            component={LogScreen}
+            options={{
+              tabBarLabel: '日誌',
+              tabBarIcon: LogIcon,
+            }}
+          />
+        </Tab.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
   );
